@@ -177,16 +177,43 @@
             box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
         }
 
-        .party-row {
-            display: flex;
-            gap: 4px;
+        .marker-star {
+            position: absolute;
+            top: -4px;
+            right: 50px;
+            font-size: 15px;
+            line-height: 1;
+            color: #000;
+            font-weight: 900;
+            text-shadow: 0 0 2px white, 0 0 3px white;
+            pointer-events: none;
         }
 
-        .mini-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            border: 1px solid #222;
+        .party-row {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mini-triangle {
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-bottom: 11px solid #222;
+            ;
+            position: relative;
+            top: -1px;
+            flex: 0 0 auto;
+        }
+
+        .mini-square {
+            width: 9px;
+            height: 9px;
+            border-radius: 0;
+            border: 0.5px solid #222;
+            flex: 0 0 8px;
         }
 
         .marker-label {
@@ -269,6 +296,7 @@
         <h1>RED CONSULAR DE MÉXICO EN ESTADOS UNIDOS — 2026</h1>
         <p>Marco de Segmentación para Comunicación Estratégica</p>
     </div>
+
     <div class="legend-bar">
         <div class="legend-heading">Leyenda</div>
         <div class="legend-grid">
@@ -289,19 +317,26 @@
                 <div><strong>Segmento 3</strong><span>Técnico /</span><span>Estrictamente</span><span>consular</span></div>
             </div>
             <div class="legend-segment">
-                <div class="legend-dot" style="background:#0a4fb3"></div>
+                <div class="legend-dot" style="background:#b56b1b"></div>
                 <div><strong>Segmento 4</strong><span>Ciudades medianas /</span><span>Entorno competitivo</span><span>o neutral</span></div>
             </div>
         </div>
     </div>
+
     <div class="political-code">
         <h3>Código político</h3>
-        <div class="meta">Izquierda: Alcalde (ciudad)<br>Derecha: Gobernador (estado)</div>
+        <div class="meta">Izquierda triángulo: Alcalde (ciudad)<br>Derecha Cuadrado: Gobernador (estado)</div>
         <div class="party-item"><span class="party-swatch" style="background:#1f77ff"></span>Demócrata</div>
         <div class="party-item"><span class="party-swatch" style="background:#d62728"></span>Republicano</div>
         <div class="party-item"><span class="party-swatch" style="background:#9b59b6"></span>Independiente</div>
+        <div class="party-item star-item">
+            <span class="star-symbol">★</span>
+            Amplificador regional
+        </div>
     </div>
+
     <div id="map"></div>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         const map = L.map('map', {
@@ -309,19 +344,32 @@
             attributionControl: false,
             preferCanvas: true
         });
+
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
         const sensitivityColors = {
             Green: '#2ecc71',
             Red: '#e31a1c',
             Yellow: '#f1c40f',
-            Blue: '#0a4fb3',
+            Blue: '#b56b1b',
             Gray: '#9e9e9e'
         };
+        const starredConsulates = new Set([
+            'New York',
+            'Los Angeles',
+            'Chicago',
+            'San Francisco',
+            'Dallas',
+            'Phoenix',
+            'Saint Paul',
+            'Boston'
+        ]);
         const partyColors = {
             Demócrata: '#1f77ff',
             Republicano: '#d62728',
             Independente: '#9b59b6'
         };
+
         const segmentNames = {
             Green: 'Alta visibilidad/Prensa Política - Entorno Demócrata',
             Red: 'Alta visibilidad/Prensa Política - Entorno Republicano',
@@ -329,7 +377,9 @@
             Gray: 'Técnico/Estrictamente Consular',
             Blue: 'Ciudades medianas/Entorno competitivo o neutral'
         };
+
         const mediaConsulates = new Set(['New York', 'Los Angeles', 'Chicago', 'San Francisco', 'Miami', 'Houston', 'El Paso', 'Atlanta', 'Dallas', 'Phoenix', 'Saint Paul', 'Boston']);
+
         const mediaByCity = {
             'New York': `New York Times — diario de referencia nacional e internacional<br>· AP, Reuters, AFP — agencias internacionales con corresponsales en temas México<br>· NBC, CBS, ABC News — sedes de las principales cadenas de televisión abierta<br>· New York Post — tabloide del consorcio de la familia Murdoch, frecuentado por el presidente Trump<br>· Fox News HQ — medio nacional de derecha sintonizado frecuentemente por el presidente Trump`,
             'Los Angeles': `· Los Angeles Times.<br>· KPCC / LAist — afiliada de NPR (radio pública nacional), con cobertura bilingüe.`,
@@ -344,6 +394,7 @@
             'Saint Paul': `· Minneapolis Star Tribune — diario dominante en un estado genuinamente competitivo; cobertura en profundidad de comunidades migrantes en industrias agrícola y de procesamiento de carne; línea editorial centrista con potencial de difusión nacional<br>· MPR News — afiliada de NPR; alcance estatal.`,
             'Boston': `· Boston Globe — diario de referencia regional y nacional<br>· WBUR / GBH News — cobertura sólida de política pública e inmigración`
         };
+
         const consulates = [{
                 city: 'New York',
                 state: 'NY',
@@ -813,20 +864,41 @@
                 mayor: 'Demócrata'
             }
         ];
+
         const bounds = L.latLngBounds(consulates.map(c => [c.lat, c.lng]));
         map.fitBounds(bounds.pad(0.20));
+
         consulates.forEach(consulate => {
-            const markerHTML = `<div class="marker-wrapper"><div class="main-marker" style="background:${sensitivityColors[consulate.category]}"></div><div class="party-row"><div class="mini-dot" style="background:${partyColors[consulate.mayor] || '#9e9e9e'}"></div><div class="mini-dot" style="background:${partyColors[consulate.governor] || '#9e9e9e'}"></div></div><div class="marker-label">${consulate.city}</div></div>`;
+            const starHTML = starredConsulates.has(consulate.city) ?
+                `<div class="marker-star">★</div>` :
+                '';
+
+            const markerHTML = `
+        <div class="marker-wrapper">
+            <div class="main-marker-wrap">
+                <div class="main-marker" style="background:${sensitivityColors[consulate.category]}"></div>
+                ${starHTML}
+            </div>
+            <div class="party-row">
+                <div class="mini-triangle" style="border-bottom-color:${partyColors[consulate.mayor] || '#9e9e9e'}"></div>
+                <div class="mini-square" style="background:${partyColors[consulate.governor] || '#9e9e9e'}"></div>
+            </div>
+            <div class="marker-label">${consulate.city}</div>
+        </div>`;
+
             const icon = L.divIcon({
                 html: markerHTML,
                 className: '',
                 iconSize: [150, 62],
                 iconAnchor: [75, 18]
             });
-            const mediaHTML = mediaByCity[consulate.city]
-                ? `<div class="media-box"><strong>Medios Importantes</strong><div class="media-lines">${mediaByCity[consulate.city]}</div></div>`
-                : '';
+
+            const mediaHTML = mediaByCity[consulate.city] ?
+                `<div class="media-box"><strong>Medios Importantes</strong><div class="media-lines">${mediaByCity[consulate.city]}</div></div>` :
+                '';
+
             const popupHTML = `<div class="consulate-popup"><div class="title">${consulate.city} Consulado</div><div class="row"><strong>Segmentación:</strong><br><span class="seg" style="background:${sensitivityColors[consulate.category]}">${segmentNames[consulate.category]}</span></div><div class="row"><strong>Alcalde:</strong> <span class="swatch" style="background:${partyColors[consulate.mayor] || '#9e9e9e'}"></span>${consulate.mayor}</div><div class="row"><strong>Gobernador:</strong> <span class="swatch" style="background:${partyColors[consulate.governor] || '#9e9e9e'}"></span>${consulate.governor}</div>${mediaHTML}</div>`;
+
             L.marker([consulate.lat, consulate.lng], {
                 icon
             }).addTo(map).bindPopup(popupHTML);
