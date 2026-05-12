@@ -160,6 +160,60 @@
             border: 1px solid rgba(0, 0, 0, 0.25);
             flex: 0 0 16px;
         }
+        .filter-panel {
+            position: absolute;
+            bottom: 0px;
+            right: 0 px;
+            z-index: 1000;
+            width: 320px;
+            background: rgba(255, 255, 255, 0.985);
+            padding: 16px 18px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+            border: 1px solid rgba(0, 0, 0, 0.14);
+        }
+
+        .filter-panel h3 {
+            margin: 0 0 12px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 800;
+            color: #444;
+            text-transform: uppercase;
+        }
+
+        .filter-panel label {
+            display: block;
+            margin: 10px 0 6px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #333;
+            text-transform: uppercase;
+        }
+
+        .filter-panel select,
+        .filter-panel button {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 0, 0, 0.18);
+            font-size: 14px;
+            font-weight: 600;
+            background: white;
+        }
+
+        .filter-panel button {
+            margin-top: 14px;
+            background: #0d1b3d;
+            color: white;
+            cursor: pointer;
+            border: none;
+        }
+
+        .filter-panel button:hover {
+            background: #16305f;
+        }
 
         .marker-wrapper {
             display: flex;
@@ -333,6 +387,38 @@
             <span class="star-symbol">★</span>
             Amplificador regional
         </div>
+    </div>
+    
+    <div class="filter-panel">
+        <h3>Filtros</h3>
+
+        <label for="filter-segment">Segmento</label>
+        <select id="filter-segment">
+            <option value="Todos">Todos</option>
+            <option value="Green">Segmento 1</option>
+            <option value="Red">Segmento 1-B</option>
+            <option value="Yellow">Segmento 2</option>
+            <option value="Gray">Segmento 3</option>
+            <option value="Blue">Segmento 4</option>
+        </select>
+
+        <label for="filter-mayor">Partido del alcalde</label>
+        <select id="filter-mayor">
+            <option value="Todos">Todos</option>
+            <option value="Demócrata">Demócrata</option>
+            <option value="Republicano">Republicano</option>
+            <option value="Independiente">Independiente</option>
+        </select>
+
+        <label for="filter-governor">Partido del gobernador</label>
+        <select id="filter-governor">
+            <option value="Todos">Todos</option>
+            <option value="Demócrata">Demócrata</option>
+            <option value="Republicano">Republicano</option>
+            <option value="Independiente">Independiente</option>
+        </select>
+
+        <button id="reset-filters" type="button">Restablecer</button>
     </div>
 
     <div id="map"></div>
@@ -874,17 +960,17 @@
                 '';
 
             const markerHTML = `
-        <div class="marker-wrapper">
-            <div class="main-marker-wrap">
-                <div class="main-marker" style="background:${sensitivityColors[consulate.category]}"></div>
-                ${starHTML}
-            </div>
-            <div class="party-row">
-                <div class="mini-triangle" style="border-bottom-color:${partyColors[consulate.mayor] || '#9e9e9e'}"></div>
-                <div class="mini-square" style="background:${partyColors[consulate.governor] || '#9e9e9e'}"></div>
-            </div>
-            <div class="marker-label">${consulate.city}</div>
-        </div>`;
+                <div class="marker-wrapper">
+                    <div class="main-marker-wrap">
+                        <div class="main-marker" style="background:${sensitivityColors[consulate.category]}"></div>
+                        ${starHTML}
+                    </div>
+                    <div class="party-row">
+                        <div class="mini-triangle" style="border-bottom-color:${partyColors[consulate.mayor] || '#9e9e9e'}"></div>
+                        <div class="mini-square" style="background:${partyColors[consulate.governor] || '#9e9e9e'}"></div>
+                    </div>
+                    <div class="marker-label">${consulate.city}</div>
+                </div>`;
 
             const icon = L.divIcon({
                 html: markerHTML,
@@ -893,15 +979,64 @@
                 iconAnchor: [75, 18]
             });
 
-            const mediaHTML = mediaByCity[consulate.city] ?
-                `<div class="media-box"><strong>Medios Importantes</strong><div class="media-lines">${mediaByCity[consulate.city]}</div></div>` :
-                '';
+            const mediaHTML = mediaByCity[consulate.city]
+                ? `<div class="media-box"><strong>Medios Importantes</strong><div class="media-lines">${mediaByCity[consulate.city]}</div></div>`
+                : '';
 
-            const popupHTML = `<div class="consulate-popup"><div class="title">${consulate.city} Consulado</div><div class="row"><strong>Segmentación:</strong><br><span class="seg" style="background:${sensitivityColors[consulate.category]}">${segmentNames[consulate.category]}</span></div><div class="row"><strong>Alcalde:</strong> <span class="swatch" style="background:${partyColors[consulate.mayor] || '#9e9e9e'}"></span>${consulate.mayor}</div><div class="row"><strong>Gobernador:</strong> <span class="swatch" style="background:${partyColors[consulate.governor] || '#9e9e9e'}"></span>${consulate.governor}</div>${mediaHTML}</div>`;
+            const popupHTML = `
+                <div class="consulate-popup">
+                    <div class="title">${consulate.city} Consulado</div>
+                    <div class="row"><strong>Segmentación:</strong><br><span class="seg" style="background:${sensitivityColors[consulate.category]}">${segmentNames[consulate.category]}</span></div>
+                    <div class="row"><strong>Alcalde:</strong> <span class="swatch" style="background:${partyColors[consulate.mayor] || '#9e9e9e'}"></span>${consulate.mayor}</div>
+                    <div class="row"><strong>Gobernador:</strong> <span class="swatch" style="background:${partyColors[consulate.governor] || '#9e9e9e'}"></span>${consulate.governor}</div>
+                    ${mediaHTML}
+                </div>`;
 
-            L.marker([consulate.lat, consulate.lng], {
+            const marker = L.marker([consulate.lat, consulate.lng], {
                 icon
             }).addTo(map).bindPopup(popupHTML);
+
+            consulate.marker = marker;
+        });
+
+        const segmentFilter = document.getElementById('filter-segment');
+        const mayorFilter = document.getElementById('filter-mayor');
+        const governorFilter = document.getElementById('filter-governor');
+        const resetButton = document.getElementById('reset-filters');
+
+        function applyFilters() {
+            const selectedSegment = segmentFilter.value;
+            const selectedMayor = mayorFilter.value;
+            const selectedGovernor = governorFilter.value;
+
+            consulates.forEach(consulate => {
+                const matchesSegment = selectedSegment === 'Todos' || consulate.category === selectedSegment;
+                const matchesMayor = selectedMayor === 'Todos' || consulate.mayor === selectedMayor;
+                const matchesGovernor = selectedGovernor === 'Todos' || consulate.governor === selectedGovernor;
+
+                const shouldShow = matchesSegment && matchesMayor && matchesGovernor;
+
+                if (shouldShow) {
+                    if (!map.hasLayer(consulate.marker)) {
+                        consulate.marker.addTo(map);
+                    }
+                } else {
+                    if (map.hasLayer(consulate.marker)) {
+                        map.removeLayer(consulate.marker);
+                    }
+                }
+            });
+        }
+
+        segmentFilter.addEventListener('change', applyFilters);
+        mayorFilter.addEventListener('change', applyFilters);
+        governorFilter.addEventListener('change', applyFilters);
+
+        resetButton.addEventListener('click', () => {
+            segmentFilter.value = 'Todos';
+            mayorFilter.value = 'Todos';
+            governorFilter.value = 'Todos';
+            applyFilters();
         });
     </script>
 </body>
